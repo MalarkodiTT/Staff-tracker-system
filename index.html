@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Staff Tracker</title>
+<style>
+:root{
+--accent:#4f46e5;
+--accent2:#06b6d4;
+--bg1:#071029;
+--bg2:#0b2540;
+--card: rgba(255,255,255,0.06);
+font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+html,body{height:100%;margin:0;background: linear-gradient(180deg,var(--bg1),var(--bg2));color:#e6eef8;}
+body::before{
+content:"";position:fixed;inset:0;pointer-events:none;opacity:0.06;
+background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'>\
+<g fill='%230f172a'>\
+<rect x='40' y='120' width='40' height='120' rx='4'/>\
+<rect x='110' y='60' width='80' height='180' rx='4'/>\
+<rect x='220' y='140' width='30' height='100' rx='4'/>\
+<rect x='280' y='30' width='100' height='210' rx='4'/>\
+<rect x='420' y='90' width='60' height='150' rx='4'/>\
+<rect x='520' y='40' width='90' height='200' rx='4'/>\
+<rect x='650' y='120' width='40' height='120' rx='4'/>\
+<rect x='720' y='70' width='80' height='170' rx='4'/>\
+<rect x='840' y='110' width='50' height='110' rx='4'/>\
+<rect x='920' y='50' width='110' height='170' rx='4'/>\
+</g></svg>");
+background-repeat:no-repeat;background-position:bottom center;background-size:cover;z-index:0;
+}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;position:relative;z-index:1}
+.card {
+width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+border-radius:16px;padding:28px;box-shadow:0 12px 40px rgba(2,6,23,0.6);
+border:1px solid rgba(255,255,255,0.03);
+}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
+h1{margin:0;font-size:20px}
+.role-wrap{text-align:center;padding:18px 6px}
+.role-title{font-size:34px;margin:4px 0 18px;font-weight:700}
+.roles{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.role-btn{min-width:200px;padding:20px 30px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#eaf6ff;font-size:20px;font-weight:700}
+.role-btn:hover{transform:translateY(-6px);transition:all .18s ease}
+.view{display:none}
+.view.active{display:block}
+.grid{display:flex;gap:12px;flex-wrap:wrap}
+.col{flex:1;min-width:200px}
+label{display:block;font-size:13px;color:rgba(230,238,248,0.9);margin-bottom:6px}
+input[type="text"],select,input[type="file"]{
+width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;
+}
+.photo-preview{width:120px;height:120px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px dashed rgba(255,255,255,0.04)}
+.photo-preview img{width:100%;height:100%;object-fit:cover}
+.controls{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--accent2));color:white}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.08);color:rgba(230,238,248,0.9)}
+hr{border:0;border-top:1px solid rgba(255,255,255,0.03);margin:18px 0}
+.search{display:flex;gap:10px;align-items:center}
+.search input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+.result-card{display:flex;gap:12px;align-items:center;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.avatar{width:78px;height:78px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-weight:800}
+.meta h3{margin:0;color:#eaf6ff}
+.meta p{margin:4px 0;color:rgba(230,238,248,0.85)}
+.spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main class="card" role="main" aria-labelledby="title">
+<div class="header">
+<div class="logo">ST</div>
+<div><h1 id="title">Staff Tracker</h1></div>
+</div>
+
+<section id="roleView" class="view active">
+<div class="role-wrap">
+<div class="role-title">Select a role</div>
+<div class="roles">
+<button id="staffBtn" class="role-btn">Staff</button>
+<button id="visitorBtn" class="role-btn">Visitor</button>
+</div>
+</div>
+</section>
+
+<section id="staffView" class="view" aria-hidden="true">
+<h2>Staff Panel</h2>
+<form id="staffForm" onsubmit="return false;">
+<div class="grid">
+<div class="col">
+<label for="photoInput">Profile Photo</label>
+<div style="display:flex;gap:10px;align-items:center">
+<div class="photo-preview" id="photoPreview" aria-hidden="true">
+<svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:.6"><path d="M12 2L20 6v8c0 5-4 9-8 9s-8-4-8-9V6l8-4z" stroke="rgba(230,238,248,0.9)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</div>
+<div style="flex:1"><input id="photoInput" type="file" accept="image/*"></div>
+</div>
+</div>
+
+<div class="col">
+<label for="name">Full name</label>
+<input id="name" type="text" required>
+<label for="department">Department</label><input id="department" type="text">
+<label for="classRoom">Class / Office</label><input id="classRoom" type="text">
+<label for="staffType">Staff Type</label>
+<select id="staffType">
+<option>Faculty</option><option>Admin</option><option>Support</option><option>Other</option>
+</select>
+</div>
+</div>
+
+<div class="controls">
+<button class="btn ghost" id="backFromStaff">Back</button>
+<button class="btn" id="saveBtn">Update</button>
+<button class="btn ghost" id="deleteBtn" style="margin-left:auto;background:transparent;border:1px solid #f87171;color:#f87171">Delete</button>
+</div>
+</form>
+
+<hr>
+<h3>Saved profile</h3>
+<div id="savedContainer"></div>
+</section>
+
+<section id="visitorView" class="view" aria-hidden="true">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<h2>Visitor Search</h2>
+<button class="btn ghost" id="backFromVisitor">Back</button>
+</div>
+<div style="margin-top:14px">
+<div class="search">
+<input id="searchInput" type="text" placeholder="Type staff name">
+<button class="btn" id="searchBtn">Search</button>
+</div>
+<div id="searchStatus" style="min-height:22px;margin-top:8px"></div>
+<div id="searchResults" style="margin-top:12px"></div>
+</div>
+</section>
+</main>
+</div>
+
+<script>
+const KEY='staffTracker.profile';
+const roleView=document.getElementById('roleView');
+const staffView=document.getElementById('staffView');
+const visitorView=document.getElementById('visitorView');
+const staffBtn=document.getElementById('staffBtn');
+const visitorBtn=document.getElementById('visitorBtn');
+const backFromStaff=document.getElementById('backFromStaff');
+const backFromVisitor=document.getElementById('backFromVisitor');
+const deleteBtn=document.getElementById('deleteBtn');
+
+function show(v){[roleView,staffView,visitorView].forEach(x=>x.classList.remove('active'));v.classList.add('active');}
+staffBtn.addEventListener('click',()=>{renderSaved();show(staffView);});
+visitorBtn.addEventListener('click',()=>{show(visitorView);});
+backFromStaff.addEventListener('click',e=>{e.preventDefault();show(roleView);});
+backFromVisitor.addEventListener('click',e=>{e.preventDefault();show(roleView);});
+
+const photoInput=document.getElementById('photoInput');
+const photoPreview=document.getElementById('photoPreview');
+const nameInput=document.getElementById('name');
+const deptInput=document.getElementById('department');
+const classInput=document.getElementById('classRoom');
+const typeInput=document.getElementById('staffType');
+const saveBtn=document.getElementById('saveBtn');
+const savedContainer=document.getElementById('savedContainer');
+const searchInput=document.getElementById('searchInput');
+const searchBtn=document.getElementById('searchBtn');
+const searchStatus=document.getElementById('searchStatus');
+const searchResults=document.getElementById('searchResults');
+
+let currentPhoto=null;
+photoInput.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{currentPhoto=ev.target.result;photoPreview.innerHTML=`<img src="${currentPhoto}" alt="photo">`;};r.readAsDataURL(f);});
+
+function readProfile(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;}}
+function writeProfile(p){localStorage.setItem(KEY,JSON.stringify(p));}
+function deleteProfile(){localStorage.removeItem(KEY);renderSaved();alert('Profile deleted.');}
+
+saveBtn.addEventListener('click',e=>{e.preventDefault();const existing=readProfile();if(existing){alert('Profile already updated.');renderSaved();return;}const name=(nameInput.value||'').trim();if(!name){alert('Enter name');nameInput.focus();return;}const profile={id:'p-'+Date.now(),name,name,dept:(deptInput.value||'').trim(),classRoom:(classInput.value||'').trim(),type:(typeInput.value||'Other'),photo:currentPhoto,updatedAt:new Date().toISOString()};writeProfile(profile);alert('Profile saved.');document.getElementById('staffForm').reset();currentPhoto=null;photoPreview.innerHTML=`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:.6"><path d="M12 2L20 6v8c0 5-4 9-8 9s-8-4-8-9V6l8-4z" stroke="rgba(230,238,248,0.9)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;renderSaved();show(roleView);});
+
+deleteBtn.addEventListener('click',e=>{e.preventDefault();const p=readProfile();if(!p){alert('No profile to delete');return;}if(confirm('Delete profile?')){deleteProfile();}});
+
+function renderSaved(){const p=readProfile();savedContainer.innerHTML='';if(!p){savedContainer.innerHTML='<div style="color:rgba(230,238,248,0.8)">No profile saved.</div>';return;}const el=document.createElement('div');el.className='result-card';el.innerHTML=`<div class="avatar">${p.photo?`<img src="${p.photo}" alt="avatar" style="width:78px;height:78px;object-fit:cover;border-radius:8px">`:`<div style="width:78px;height:78px;display:flex;align-items:center;justify-content:center;font-weight:800">${escapeHtml((p.name||'')[0]||'?')}</div>`}</div><div class="meta"><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.type)} · ${escapeHtml(p.dept||'—')} · ${escapeHtml(p.classRoom||'—')}</p><div style="font-size:13px;color:rgba(230,238,248,0.75)">Updated: ${formatTime(p.updatedAt)}</div></div>`;savedContainer.appendChild(el);}
+
+searchBtn.addEventListener('click',runSearch);
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();runSearch();}});
+function runSearch(){const q=(searchInput.value||'').trim().toLowerCase();searchResults.innerHTML='';searchStatus.innerHTML='';if(!q){searchStatus.textContent='Type name';return;}searchStatus.innerHTML=`<span class="spinner"></span> Searching...`;setTimeout(()=>{const p=readProfile();searchStatus.innerHTML='';if(!p||!(p.name||'').toLowerCase().includes(q)){searchResults.innerHTML='<div style="color:rgba(230,238,248,0.85)">No results.</div>';return;}const div=document.createElement('div');div.className='result-card';div.innerHTML=`<div class="avatar">${p.photo?`<img src="${p.photo}" alt="avatar" style="width:78px;height:78px;object-fit:cover;border-radius:8px">`:`<div style="width:78px;height:78px;display:flex;align-items:center;justify-content:center;font-weight:800">${escapeHtml((p.name||'')[0]||'?')}</div>`}</div><div class="meta"><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.type)} · ${escapeHtml(p.dept||'—')}</p><div style="font-size:13px;color:rgba(230,238,248,0.75)">Location: ${escapeHtml(p.classRoom||'—')} · Updated: ${formatTime(p.updatedAt)}</div></div>`;searchResults.appendChild(div);},700);}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function formatTime(iso){try{return new Date(iso).toLocaleString();}catch(e){return iso;}}
+(function init(){renderSaved();})();
+</script>
+</body>
+</html>
+
